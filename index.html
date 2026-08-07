@@ -2678,7 +2678,7 @@
     function goPrev(){ show(idx - 1); }
     function restartTimer(){
       if(timer){ clearInterval(timer); timer = null; }
-      if(!reduceMotion){ timer = setInterval(goNext, 2000); }
+      if(!reduceMotion){ timer = setInterval(goNext, 1500); }
     }
     if(prevBtn){ prevBtn.addEventListener('click', function(){ goPrev(); restartTimer(); }); }
     if(nextBtn){ nextBtn.addEventListener('click', function(){ goNext(); restartTimer(); }); }
