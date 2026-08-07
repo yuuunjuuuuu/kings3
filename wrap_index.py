@@ -38,6 +38,7 @@ head = '''<!DOCTYPE html>
 <meta property="og:title" content="''' + title_text + '''">
 <meta property="og:description" content="''' + description + '''">
 <meta property="og:url" content="https://kcdalab.co.kr/">
+<meta name="google-site-verification" content="ddbYlWb3xO07qf063BGyZkIS32VwQuT6KwKzh04W-k4" />
 </head>
 <body>
 '''
