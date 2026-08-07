@@ -161,6 +161,9 @@
   @keyframes heroFadeUp{ from{ opacity:0; transform:translateY(18px);} to{ opacity:1; transform:translateY(0);} }
   @keyframes blockIn{ from{ opacity:0; transform:translateX(-14px);} to{ opacity:1; transform:translateX(0);} }
   .block[data-spy]:not([hidden]){ animation:blockIn .5s var(--ease) both; }
+  @keyframes routeIn{ from{ opacity:0;} to{ opacity:1;} }
+  .route:not([hidden]){ animation:routeIn .45s var(--ease) both; }
+  @media (prefers-reduced-motion: reduce){ .block[data-spy], .route{ animation:none; } }
   .hero-eyebrow{ font-family:var(--font-mono); font-size:.72rem; letter-spacing:.12em; color:var(--brand-navy);
     background:var(--accent); font-weight:800; display:inline-block; padding:.35rem .7rem; border-radius:var(--radius-full);
     margin-bottom:1.4rem; animation:heroFadeUp .7s var(--ease) both; }
@@ -2117,7 +2120,8 @@
   /* reveal on scroll — also auto-applied to card/row components sitewide for a livelier feel */
   document.querySelectorAll(
     '.value-card, .case-story, .info-card, .split-card, .tier-card, .tier-mini, .step, .cycle-box, ' +
-    '.profile-card, .res-item, .paper-row, .nav-card, .history-year, .org-chart'
+    '.profile-card, .res-item, .paper-card, .prog-card, .quad-card, .example-box, .org-box, ' +
+    '.paper-teaser, .nav-card, .history-year, .org-chart'
   ).forEach(function(el){ el.classList.add('reveal'); });
 
   if('IntersectionObserver' in window){
