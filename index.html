@@ -146,6 +146,8 @@
   .hero-slide-bg{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; z-index:0;
     transform:scale(1); animation:heroKenBurns 16s ease-in-out infinite alternate; }
   @keyframes heroKenBurns{ from{ transform:scale(1) translate(0,0);} to{ transform:scale(1.09) translate(-1%,-1%);} }
+  .hero-slide-bg-blur{ filter:blur(42px) saturate(1.15) brightness(.85); animation-name:heroKenBurnsBlur; }
+  @keyframes heroKenBurnsBlur{ from{ transform:scale(1.18) translate(0,0);} to{ transform:scale(1.28) translate(-1.5%,-1%);} }
   .hero-slide-scrim{ position:absolute; inset:0; z-index:1;
     background:linear-gradient(100deg, rgba(10,16,28,.86) 8%, rgba(10,16,28,.55) 46%, rgba(10,16,28,.18) 82%); }
   .hero .blob{ position:absolute; border-radius:50%; filter:blur(70px); pointer-events:none; will-change:transform; z-index:1; }
@@ -743,6 +745,8 @@
     </div>
 
     <div class="hero-slide" data-slide="2">
+      <img class="hero-slide-bg hero-slide-bg-blur" id="heroSlide2Bg" alt="">
+      <div class="hero-slide-scrim"></div>
       <div class="blob blob-1" aria-hidden="true"></div>
       <div class="hero-inner">
         <span class="hero-eyebrow">NEW RESEARCH</span>
@@ -2684,27 +2688,34 @@
     heroEl.addEventListener('mouseenter', function(){ if(timer){ clearInterval(timer); timer = null; } });
     heroEl.addEventListener('mouseleave', restartTimer);
 
-    /* touch swipe (phones: swipe instead of tapping the arrows) */
-    var touchStartX = null;
-    var touchStartY = null;
-    heroEl.addEventListener('touchstart', function(e){
-      var t = e.changedTouches[0];
-      touchStartX = t.clientX;
-      touchStartY = t.clientY;
-    }, { passive: true });
-    heroEl.addEventListener('touchend', function(e){
-      if(touchStartX === null) return;
-      var t = e.changedTouches[0];
-      var dx = t.clientX - touchStartX;
-      var dy = t.clientY - touchStartY;
-      touchStartX = null;
+    /* swipe/drag: touch (phones) and mouse drag (desktop) both go through
+       Pointer Events so one code path handles both input types */
+    var dragStartX = null;
+    var dragStartY = null;
+    var dragActive = false;
+    heroEl.addEventListener('pointerdown', function(e){
+      if(e.pointerType === 'mouse' && e.button !== 0) return;
+      dragActive = true;
+      dragStartX = e.clientX;
+      dragStartY = e.clientY;
+    });
+    heroEl.addEventListener('pointerup', function(e){
+      if(!dragActive) return;
+      dragActive = false;
+      var dx = e.clientX - dragStartX;
+      var dy = e.clientY - dragStartY;
       if(Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy)){
         if(dx < 0){ goNext(); } else { goPrev(); }
         restartTimer();
       }
-    }, { passive: true });
+    });
+    heroEl.addEventListener('pointercancel', function(){ dragActive = false; });
 
     restartTimer();
+
+    var heroSlide2Bg = document.getElementById('heroSlide2Bg');
+    var heroPromoThumb = heroEl.querySelector('.hero-promo-thumb');
+    if(heroSlide2Bg && heroPromoThumb){ heroSlide2Bg.src = heroPromoThumb.src; }
 
     var heroPromoBtn = document.getElementById('heroPromoBtn');
     if(heroPromoBtn){
