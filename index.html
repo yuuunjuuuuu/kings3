@@ -593,13 +593,6 @@
   .signup-otp-hint{ margin-top:.5rem; font-size:.76rem; color:var(--accent-deep); background:var(--accent-tint);
     border-radius:6px; padding:.5rem .7rem; line-height:1.5; }
   .signup-file-hint{ margin-top:.4rem; font-size:.76rem; color:var(--ink-soft); }
-  .site-gate{ position:fixed; inset:0; z-index:290; background:var(--brand-navy);
-    display:flex; align-items:center; justify-content:center; padding:1.5rem; }
-  .site-gate-card{ max-width:400px; width:100%; text-align:center; color:var(--on-dark); }
-  .site-gate-logo{ height:34px; width:auto; }
-  .site-gate-card h2{ font-size:1.3rem; font-weight:800; margin-bottom:.6rem; }
-  .site-gate-card p{ font-size:.9rem; color:var(--on-dark-soft); line-height:1.6; margin-bottom:1.6rem; }
-  .site-gate-actions{ display:flex; flex-direction:column; gap:.7rem; }
   .diag-progress-bg{ background:var(--surface-2); height:8px; border-radius:4px; overflow:hidden; margin:1rem 0 1.4rem; }
   .diag-progress-fill{ background:var(--brand-navy); height:100%; width:8.3%; transition:width .3s var(--ease); }
   .diag-question{ font-size:1.05rem; font-weight:700; line-height:1.55; margin-bottom:1.4rem; min-height:3.2rem; color:var(--ink); }
@@ -2090,20 +2083,6 @@
   </div>
 </div>
 
-<!-- ================= TEMPORARY SITE GATE (pre-launch preview lock) ================= -->
-<div class="site-gate" id="siteGate" hidden>
-  <div class="site-gate-card">
-    <img class="site-gate-logo" id="siteGateLogo" src="" alt="KCDA">
-    <span class="eyebrow" style="margin:1.2rem 0 .8rem;">PRE-LAUNCH PREVIEW</span>
-    <h2>정식 오픈 준비 중입니다</h2>
-    <p>KCDA 웹사이트는 아직 정식 공개 전으로, 로그인 후 미리보기를 확인하실 수 있습니다.</p>
-    <div class="site-gate-actions">
-      <button type="button" class="btn btn-primary" id="siteGateLoginBtn" style="width:100%;">로그인</button>
-      <button type="button" class="btn btn-ghost" id="siteGateSignupBtn" style="width:100%;">회원가입</button>
-    </div>
-  </div>
-</div>
-
 <!-- ================= HEXAGON TALENT SELF-DIAGNOSIS MODAL ================= -->
 <div class="modal-backdrop" id="hexModal" hidden>
   <div class="modal wide-modal" id="hexModalInner" role="dialog" aria-modal="true" aria-labelledby="hexModalTitle">
@@ -2142,7 +2121,7 @@
   var mobileNav = document.getElementById('mobileNav');
   var menuToggle = document.getElementById('menuToggle');
   var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  var SITE_LOCKED = true; /* pre-launch preview gate - set to false to open the site to everyone */
+  var SITE_LOCKED = true; /* pre-launch preview: home screen stays visible, but any click that would navigate/act asks for login first - set to false to remove */
 
   function parseHash(){
     var h = window.location.hash.replace(/^#\/?/, '');
@@ -2284,13 +2263,6 @@
     authLoggedIn.hidden = !loggedIn;
     if(loggedIn){ authUserName.textContent = getUserName(); }
     if(!document.querySelector('.route[data-route="member"]').hidden){ updateMemberGate(); }
-
-    var siteGate = document.getElementById('siteGate');
-    if(siteGate){
-      var locked = SITE_LOCKED && !loggedIn;
-      siteGate.hidden = !locked;
-      document.body.style.overflow = locked ? 'hidden' : '';
-    }
   }
 
   var loginModal = document.getElementById('loginModal');
@@ -2368,11 +2340,6 @@
   }
 
   document.getElementById('loginOpenBtn').addEventListener('click', openLoginModal);
-  document.getElementById('siteGateLoginBtn').addEventListener('click', openLoginModal);
-  document.getElementById('siteGateSignupBtn').addEventListener('click', openSignupModal);
-  var siteLogoImg = document.getElementById('siteLogoImg');
-  var siteGateLogo = document.getElementById('siteGateLogo');
-  if(siteLogoImg && siteGateLogo){ siteGateLogo.src = siteLogoImg.src; }
   document.getElementById('gateLoginBtn').addEventListener('click', openLoginModal);
   document.getElementById('gateSignupBtn').addEventListener('click', openSignupModal);
   document.getElementById('loginOpenBtnMobile').addEventListener('click', function(){
@@ -2908,6 +2875,22 @@
       statNums.forEach(function(el){ statObserver.observe(el); });
     }
   }
+
+  /* pre-launch preview: home screen itself stays visible, but any click on
+     a link/button asks for login first (except the login/signup flow itself) */
+  document.addEventListener('click', function(e){
+    if(!SITE_LOCKED || isLoggedIn()) return;
+    var exempt = e.target.closest(
+      '#loginModal, #signupModal, #loginOpenBtn, #gateLoginBtn, #gateSignupBtn, ' +
+      '#loginOpenBtnMobile, #logoutBtn, #menuToggle, a.logo'
+    );
+    if(exempt) return;
+    var actionable = e.target.closest('a, button');
+    if(!actionable) return;
+    e.preventDefault();
+    e.stopPropagation();
+    openLoginModal();
+  }, true);
 
   refreshAuthUI();
   goTo();
