@@ -577,6 +577,17 @@
     border-radius:6px; background:var(--surface); color:var(--ink); width:100%; }
   .modal-foot{ margin-top:.6rem; font-size:.8rem; color:var(--ink-soft); text-align:center; }
   .auth-note{ margin-top:1rem; font-size:.78rem; color:var(--ink-soft); background:var(--surface-2); border-radius:6px; padding:.6rem .8rem; }
+  .signup-type-grid{ display:grid; grid-template-columns:1fr 1fr; gap:.9rem; }
+  .signup-type-card{ display:flex; flex-direction:column; gap:.5rem; text-align:left; padding:1.1rem;
+    border:1.5px solid var(--line); border-radius:var(--radius); background:var(--surface); cursor:pointer; font-family:inherit;
+    transition:border-color .2s ease, background .2s ease, transform .2s var(--ease); }
+  .signup-type-card:hover{ border-color:var(--accent-deep); background:var(--accent-tint); transform:translateY(-2px); }
+  .signup-type-card b{ font-size:.96rem; color:var(--ink); }
+  .signup-type-card span{ font-size:.78rem; color:var(--ink-soft); line-height:1.5; }
+  @media (max-width:480px){ .signup-type-grid{ grid-template-columns:1fr; } }
+  .signup-otp-hint{ margin-top:.5rem; font-size:.76rem; color:var(--accent-deep); background:var(--accent-tint);
+    border-radius:6px; padding:.5rem .7rem; line-height:1.5; }
+  .signup-file-hint{ margin-top:.4rem; font-size:.76rem; color:var(--ink-soft); }
   .diag-progress-bg{ background:var(--surface-2); height:8px; border-radius:4px; overflow:hidden; margin:1rem 0 1.4rem; }
   .diag-progress-fill{ background:var(--brand-navy); height:100%; width:8.3%; transition:width .3s var(--ease); }
   .diag-question{ font-size:1.05rem; font-weight:700; line-height:1.55; margin-bottom:1.4rem; min-height:3.2rem; color:var(--ink); }
@@ -1961,7 +1972,23 @@
     <button type="button" class="modal-close" id="signupCloseBtn" aria-label="닫기">✕</button>
     <h2 id="signupModalTitle">회원가입</h2>
     <p class="sub">KCDA 회원가입 (데모)</p>
-    <form id="signupForm">
+    <div id="signupTypeStep">
+      <div class="signup-type-grid">
+        <button type="button" class="signup-type-card" data-type="org">
+          <b>기관 회원</b>
+          <span>기관명과 기관 이메일 인증(OTP)으로 가입하는 소속 중심 회원입니다.</span>
+        </button>
+        <button type="button" class="signup-type-card" data-type="cert">
+          <b>자격·면허 회원</b>
+          <span>자격/면허 번호와 증빙서류로 가입하는 개인 자격 중심 회원입니다.</span>
+        </button>
+      </div>
+    </div>
+    <form id="signupForm" hidden>
+      <button type="button" class="link-more" id="signupBackBtn"
+        style="background:none; border:none; padding:0; cursor:pointer; font-family:inherit; margin-bottom:1.1rem; font-size:.82rem;">
+        ← 가입 유형 다시 선택
+      </button>
       <div class="field">
         <label for="suName">이름</label>
         <input id="suName" type="text" placeholder="이름을 입력하세요" required>
@@ -1970,10 +1997,42 @@
         <label for="suId">아이디</label>
         <input id="suId" type="text" placeholder="사용할 아이디를 입력하세요" required>
       </div>
-      <div class="field">
-        <label for="suEmail">이메일</label>
-        <input id="suEmail" type="email" placeholder="name@email.com" required>
+
+      <div class="field signup-field-org" hidden>
+        <label for="suOrgName">기관명</label>
+        <input id="suOrgName" type="text" placeholder="소속 기관명을 입력하세요">
       </div>
+      <div class="field signup-field-org" hidden>
+        <label for="suOrgEmail">기관 이메일</label>
+        <div style="display:flex; gap:.5rem;">
+          <input id="suOrgEmail" type="email" placeholder="name@institution.ac.kr" style="flex:1;">
+          <button type="button" class="btn btn-ghost btn-sm" id="suOrgSendCodeBtn" style="white-space:nowrap;">인증번호 발송</button>
+        </div>
+        <p class="signup-otp-hint" id="suOrgOtpHint" hidden></p>
+      </div>
+      <div class="field signup-field-org" hidden>
+        <label for="suOrgCode">인증번호</label>
+        <input id="suOrgCode" type="text" inputmode="numeric" maxlength="6" placeholder="발송된 6자리 인증번호를 입력하세요">
+      </div>
+      <div class="field signup-field-org" hidden>
+        <label for="suOrgEmpId">사번 (선택)</label>
+        <input id="suOrgEmpId" type="text" placeholder="사번을 입력하세요">
+      </div>
+
+      <div class="field signup-field-cert" hidden>
+        <label for="suCertNo">자격/면허 번호</label>
+        <input id="suCertNo" type="text" placeholder="자격 또는 면허 번호를 입력하세요">
+      </div>
+      <div class="field signup-field-cert" hidden>
+        <label for="suBirth">생년월일</label>
+        <input id="suBirth" type="date">
+      </div>
+      <div class="field signup-field-cert" hidden>
+        <label for="suCertFile">자격증 증빙서류 첨부</label>
+        <input id="suCertFile" type="file" accept=".pdf,.jpg,.jpeg,.png">
+        <p class="signup-file-hint" id="suCertFileHint"></p>
+      </div>
+
       <div class="field">
         <label for="suPw">비밀번호</label>
         <input id="suPw" type="password" placeholder="비밀번호를 입력하세요" required>
@@ -1985,7 +2044,7 @@
       <p class="form-error" id="signupError" hidden></p>
       <button type="submit" class="btn btn-primary" style="width:100%;">가입하기</button>
     </form>
-    <div class="auth-note">가입 정보는 이 브라우저에만 저장되는 데모용 데이터입니다. 실제 회원 데이터베이스와 연동되어 있지 않습니다.</div>
+    <div class="auth-note">가입 정보는 이 브라우저에만 저장되는 데모용 데이터입니다. 실제 회원 데이터베이스·이메일 인증·서류 심사와 연동되어 있지 않습니다.</div>
     <p class="modal-foot">이미 계정이 있으신가요? <button type="button" class="link-more" id="backToLoginBtn" style="background:none; border:none; padding:0; cursor:pointer; font-family:inherit;">로그인 하기</button></p>
   </div>
 </div>
@@ -2204,6 +2263,44 @@
   var signupModal = document.getElementById('signupModal');
   var signupForm = document.getElementById('signupForm');
   var signupError = document.getElementById('signupError');
+  var signupTypeStep = document.getElementById('signupTypeStep');
+  var signupType = null;
+  var signupOtpCode = null;
+  var signupOrgFields = Array.prototype.slice.call(document.querySelectorAll('.signup-field-org'));
+  var signupCertFields = Array.prototype.slice.call(document.querySelectorAll('.signup-field-cert'));
+
+  document.querySelectorAll('.signup-type-card').forEach(function(card){
+    card.addEventListener('click', function(){
+      signupType = card.dataset.type;
+      signupTypeStep.hidden = true;
+      signupForm.hidden = false;
+      signupOrgFields.forEach(function(f){ f.hidden = signupType !== 'org'; });
+      signupCertFields.forEach(function(f){ f.hidden = signupType !== 'cert'; });
+      document.getElementById('suName').focus();
+    });
+  });
+  document.getElementById('signupBackBtn').addEventListener('click', function(){
+    signupForm.hidden = true;
+    signupTypeStep.hidden = false;
+    signupType = null;
+  });
+  document.getElementById('suOrgSendCodeBtn').addEventListener('click', function(){
+    var hint = document.getElementById('suOrgOtpHint');
+    var email = document.getElementById('suOrgEmail').value.trim();
+    if(!email){
+      hint.hidden = false;
+      hint.textContent = '기관 이메일을 먼저 입력해주세요.';
+      return;
+    }
+    signupOtpCode = String(Math.floor(100000 + Math.random() * 900000));
+    hint.hidden = false;
+    hint.textContent = '데모 인증번호: ' + signupOtpCode + ' (실제 서비스에서는 이 번호가 기관 이메일로 발송됩니다)';
+  });
+  document.getElementById('suCertFile').addEventListener('change', function(e){
+    var hint = document.getElementById('suCertFileHint');
+    var file = e.target.files[0];
+    hint.textContent = file ? ('선택된 파일: ' + file.name) : '';
+  });
 
   function openLoginModal(){
     signupModal.hidden = true;
@@ -2221,8 +2318,14 @@
     if(previewModal){ previewModal.hidden = true; }
     if(hexModal){ hexModal.hidden = true; }
     signupError.hidden = true;
+    signupType = null;
+    signupOtpCode = null;
+    signupForm.reset();
+    signupForm.hidden = true;
+    signupTypeStep.hidden = false;
+    document.getElementById('suOrgOtpHint').hidden = true;
+    document.getElementById('suCertFileHint').textContent = '';
     signupModal.hidden = false;
-    document.getElementById('suName').focus();
   }
   function closeSignupModal(){
     signupModal.hidden = true;
@@ -2286,7 +2389,6 @@
     e.preventDefault();
     var name = document.getElementById('suName').value.trim();
     var id = document.getElementById('suId').value.trim();
-    var email = document.getElementById('suEmail').value.trim();
     var pw = document.getElementById('suPw').value;
     var pw2 = document.getElementById('suPw2').value;
 
@@ -2300,12 +2402,69 @@
       signupError.hidden = false;
       return;
     }
-    addUser({ id: id, pw: pw, name: name, email: email });
+
+    var user = { id: id, pw: pw, name: name, memberType: signupType };
+
+    if(signupType === 'org'){
+      var orgName = document.getElementById('suOrgName').value.trim();
+      var orgEmail = document.getElementById('suOrgEmail').value.trim();
+      var orgCode = document.getElementById('suOrgCode').value.trim();
+      var empId = document.getElementById('suOrgEmpId').value.trim();
+      if(!orgName || !orgEmail){
+        signupError.textContent = '기관명과 기관 이메일을 입력해주세요.';
+        signupError.hidden = false;
+        return;
+      }
+      if(!signupOtpCode){
+        signupError.textContent = '기관 이메일 인증번호를 먼저 발송해주세요.';
+        signupError.hidden = false;
+        return;
+      }
+      if(orgCode !== signupOtpCode){
+        signupError.textContent = '인증번호가 일치하지 않습니다.';
+        signupError.hidden = false;
+        return;
+      }
+      user.orgName = orgName;
+      user.orgEmail = orgEmail;
+      user.empId = empId;
+      user.verifyStatus = 'verified';
+    } else if(signupType === 'cert'){
+      var certNo = document.getElementById('suCertNo').value.trim();
+      var birth = document.getElementById('suBirth').value;
+      var certFile = document.getElementById('suCertFile').files[0];
+      if(!certNo || !birth){
+        signupError.textContent = '자격/면허 번호와 생년월일을 입력해주세요.';
+        signupError.hidden = false;
+        return;
+      }
+      if(!certFile){
+        signupError.textContent = '자격증 증빙서류를 첨부해주세요.';
+        signupError.hidden = false;
+        return;
+      }
+      user.certNo = certNo;
+      user.birth = birth;
+      user.certFileName = certFile.name;
+      user.verifyStatus = 'pending';
+    } else {
+      signupError.textContent = '가입 유형을 먼저 선택해주세요.';
+      signupError.hidden = false;
+      return;
+    }
+
+    addUser(user);
     setSession(name || id);
     refreshAuthUI();
-    closeSignupModal();
     signupForm.reset();
     signupError.hidden = true;
+    if(signupType === 'cert'){
+      openPreview('회원가입 완료', '가입 신청이 접수되었습니다', '', null,
+        '자격/면허 번호와 첨부하신 증빙서류는 관리자 확인 후 최종 승인됩니다. 승인 전에도 로그인은 가능하며, 승인이 완료되면 별도로 안내드립니다.');
+    } else {
+      openPreview('회원가입 완료', 'KCDA 회원이 되신 것을 환영합니다', '', null,
+        '기관 이메일 인증까지 완료되어 정상적으로 가입되었습니다.');
+    }
   });
 
   /* buttons/links gated behind login (program details, cert-manage tools, member gate CTA) */
