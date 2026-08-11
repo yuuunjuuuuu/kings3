@@ -505,6 +505,10 @@
   .preview-dots{ position:absolute; bottom:.6rem; left:50%; transform:translateX(-50%); z-index:3; display:flex; gap:.4rem; }
   .preview-dot{ width:6px; height:6px; border-radius:999px; background:rgba(120,120,130,.4); transition:background .2s ease, width .3s var(--ease); }
   .preview-dot.is-active{ background:var(--brand-navy); width:18px; }
+  #previewImg.is-blurred{ filter:blur(16px) saturate(.9); }
+  .preview-blur-hint{ position:absolute; inset:0; z-index:2; display:flex; align-items:center; justify-content:center;
+    text-align:center; padding:1.5rem; font-weight:800; font-size:.92rem; color:#fff;
+    background:rgba(10,16,28,.4); }
 
   /* board */
   .board-wrap{ overflow-x:auto; }
@@ -2090,6 +2094,7 @@
         <span class="preview-dot is-active" data-page="1"></span>
         <span class="preview-dot" data-page="2"></span>
       </div>
+      <div class="preview-blur-hint" id="previewBlurHint" hidden>다운로드하여 전체 내용을 확인하세요</div>
     </div>
     <div class="preview-paper-actions" id="previewPaperActions" hidden>
       <button type="button" class="btn btn-primary" id="previewDownload">다운로드 · 파일 보기</button>
@@ -2530,6 +2535,7 @@
   var previewPrevArrow = document.getElementById('previewPrevArrow');
   var previewNextArrow = document.getElementById('previewNextArrow');
   var previewDots = document.getElementById('previewDots');
+  var previewBlurHint = document.getElementById('previewBlurHint');
   var previewDownload = document.getElementById('previewDownload');
   var currentPaper = null;
 
@@ -2583,8 +2589,11 @@
     var page = currentPaper.page || 1;
     previewImg.src = page === 2 ? currentPaper.img2 : currentPaper.img1;
     previewImg.alt = currentPaper.title + ' ' + page + '페이지';
+    previewImg.classList.toggle('is-blurred', page === 2);
+    previewBlurHint.hidden = page !== 2;
     previewPageBadge.textContent = page + '페이지 미리보기';
     previewPrevArrow.disabled = page <= 1;
+    previewNextArrow.disabled = page >= 2;
     previewDots.querySelectorAll('.preview-dot').forEach(function(dot){
       dot.classList.toggle('is-active', Number(dot.dataset.page) === page);
     });
@@ -2615,15 +2624,10 @@
   });
 
   previewNextArrow.addEventListener('click', function(){
-    if(!currentPaper) return;
-    if((currentPaper.page || 1) === 1){
-      if(!isLoggedIn()){ openLoginModal(); return; }
-      currentPaper.page = 2;
-      renderPreviewPage();
-      return;
-    }
-    previewStatus.hidden = false;
-    previewStatus.textContent = '3페이지부터는 준비 중입니다. 업데이트되는 대로 이 자리에서 확인하실 수 있습니다.';
+    if(!currentPaper || (currentPaper.page || 1) !== 1) return;
+    if(!isLoggedIn()){ openLoginModal(); return; }
+    currentPaper.page = 2;
+    renderPreviewPage();
   });
   previewPrevArrow.addEventListener('click', function(){
     if(!currentPaper || (currentPaper.page || 1) <= 1) return;
