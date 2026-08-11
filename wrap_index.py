@@ -28,13 +28,18 @@ rest = source[title_end:]
 PDF_FILES = {
     '협업역량이 공동 목표 달성에 미치는 영향: 다양한 구성원 간 역할 조율을 중심으로': '협업 능력.pdf',
     '기업 핵심인재 역량으로서 자기주도성과 실행력의 개념적 통합과 개발 방안': '자기주도성과_실행력_KCI.pdf',
-    '기업 핵심인재 역량으로서 변화 적응력과 성장 가능성의 개념적 통합과 인적자원관리 방안': '변화_적응력과_성장_가능성_KCI.pdf',
+    # '변화 적응력과 성장 가능성...' intentionally excluded: the source PDF is
+    # ~42MB (embeds full, non-subsetted Noto Serif CJK fonts) - embedding it
+    # as a data URI would balloon the whole site to ~55MB+, so it keeps the
+    # mock download message until a properly font-subsetted file is provided.
     '직무 전문성의 구성요인과 개발 메커니즘에 관한 문헌고찰': '직무_전문성_KCI.pdf',
-    '기업 핵심인재 역량으로서 문제 해결력의 개념적 구조와 인적자원관리 적용방안': '문제_해결력_KCI.pdf',
+    '문제 해결역량의 구조적 특성과 기업 인재관리 활용방안': '문제_해결역량의_구조적_특성과_기업_인재관리_활용방안.pdf',
     '기업 핵심인재 역량으로서 의사소통 능력의 개념적 통합과 개발방안': '의사소통_능력_KCI.pdf',
 }
 
 pdf_pattern = re.compile(r'(data-title="([^"]+)" data-meta="[^"]+" data-authors="[^"]+" data-img1=")')
+
+embedded_titles = []
 
 def inject_pdf(m):
     title = m.group(2)
@@ -43,11 +48,14 @@ def inject_pdf(m):
         return m.group(0)
     with open(filename, 'rb') as pf:
         b64 = base64.b64encode(pf.read()).decode('ascii')
+    embedded_titles.append(title)
     return 'data-pdf="data:application/pdf;base64,' + b64 + '" ' + m.group(0)
 
 rest, n = pdf_pattern.subn(inject_pdf, rest)
-assert n == len(PDF_FILES), 'expected %d paper triggers, matched %d' % (len(PDF_FILES), n)
-print('embedded', n, 'real PDFs')
+assert n == 6, 'expected 6 paper trigger elements, matched %d' % n
+assert len(embedded_titles) == len(PDF_FILES), \
+    'expected %d embeds, got %d (%r)' % (len(PDF_FILES), len(embedded_titles), embedded_titles)
+print('embedded', len(embedded_titles), 'real PDFs out of', n, 'papers')
 
 # reuse the already-embedded KCDA logo as the favicon (small enough as a data URI)
 logo_start = source.find('id="siteLogoImg" src="')
