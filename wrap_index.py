@@ -29,7 +29,6 @@ rest = source[title_end:]
 # papers/ instead so they don't bloat every page load of the main site.
 PDF_FILES = {
     '협업역량이 공동 목표 달성에 미치는 영향: 다양한 구성원 간 역할 조율을 중심으로': '협업 능력.pdf',
-    '기업 핵심인재 역량으로서 자기주도성과 실행력의 개념적 통합과 개발 방안': '자기주도성과_실행력_KCI.pdf',
     '직무 전문성의 구성요인과 개발 메커니즘에 관한 문헌고찰': '직무_전문성_KCI.pdf',
     '문제 해결역량의 구조적 특성과 기업 인재관리 활용방안': '문제_해결역량의_구조적_특성과_기업_인재관리_활용방안.pdf',
     '기업 핵심인재 역량으로서 의사소통 능력의 개념적 통합과 개발방안': '의사소통_능력_KCI.pdf',
@@ -40,6 +39,7 @@ PDF_FILES = {
 # and just linked to instead.
 PDF_EXTERNAL_URLS = {
     '변화 적응력과 성장 가능성의 통합모형과 인적자원관리 적용방안': 'papers/change-adaptability-growth-potential.pdf',
+    '기업 핵심인재 역량으로서 자기주도성과 실행력의 개념적 통합과 개발방안': 'papers/자기주도성과_실행력_제목_저자수정_v2.pdf',
 }
 
 pdf_pattern = re.compile(r'(data-title="([^"]+)" data-meta="[^"]+" data-authors="[^"]+" data-img1=")')
